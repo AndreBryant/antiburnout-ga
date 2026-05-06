@@ -1,11 +1,9 @@
 import { Chromosome } from "./Chromosome.js";
-import { todo } from "./utils.js";
+import { todo, consoleAnimateGA } from "./utils.js";
 
 export class GeneticAlgorithm {
   populationSize;
   geneCount;
-  crossoverRate;
-  mutationRate;
   generations;
   currentGeneration = 0;
   fitnessFunction;
@@ -18,8 +16,6 @@ export class GeneticAlgorithm {
   constructor(
     populationSize,
     geneCount,
-    crossoverRate,
-    mutationRate,
     generations,
     fitnessFunction,
     crossoverFunction,
@@ -28,8 +24,6 @@ export class GeneticAlgorithm {
   ) {
     this.populationSize = populationSize;
     this.geneCount = geneCount;
-    this.crossoverRate = crossoverRate;
-    this.mutationRate = mutationRate;
     this.generations = generations;
     this.fitnessFunction = fitnessFunction;
     this.crossoverFunction = crossoverFunction;
@@ -37,12 +31,18 @@ export class GeneticAlgorithm {
     this.fitnessThreshold = fitnessThreshold;
   }
 
-  start() {
+  async start() {
     this.initializePopulation();
 
-    while (this.currentGeneration <= this.generations) {
+    while (this.currentGeneration < this.generations) {
       // i think generation 0 is the initial population so it makes sense that we increment at the start of the loop
       this.currentGeneration++;
+      await consoleAnimateGA(this.population, 100, {
+        Generation: this.currentGeneration,
+        "Best Solution (P) found so far": this.bestSolution.genes.join(""),
+        "Fitness of P": this.bestSolution.fitness.toFixed(4),
+        "We will stop at fitness": this.fitnessThreshold.toFixed(4),
+      });
 
       if (
         this.bestSolution &&
@@ -52,11 +52,18 @@ export class GeneticAlgorithm {
         break;
       }
 
-      const [p1, p2] = [this.selectParent(), this.selectParent()];
-      this.crossover();
-      this.mutate();
+      const newGeneration = [];
+      while (newGeneration.length < this.populationSize) {
+        const [p1, p2] = [this.selectParent(), this.selectParent()];
+        const offspring = this.crossover(p1, p2);
+        this.mutate(offspring);
+        newGeneration.push(offspring);
+      }
+      this.population = newGeneration;
       this.evaluateFitness();
     }
+
+    this.reportResults();
   }
 
   initializePopulation() {
@@ -64,7 +71,7 @@ export class GeneticAlgorithm {
     for (let i = 0; i < this.populationSize; i++) {
       const genes = this.randomGenes();
       const fitness = this.fitnessFunction(genes);
-      const chromosome = new Chromosome(genes, 1 - 1 / fitness);
+      const chromosome = new Chromosome(genes, fitness);
       this.population.push(chromosome);
       this.isBestSolution(chromosome);
     }
@@ -96,20 +103,16 @@ export class GeneticAlgorithm {
       .sort((a, b) => b.fitness - a.fitness)[0];
   }
 
-  crossover() {
-    todo(
-      "crossover",
-      "Crossover parents to create offspring",
-      "GeneticAlgorithm.js",
-    );
+  crossover(parent1, parent2) {
+    return this.crossoverFunction(parent1, parent2);
   }
 
-  mutate() {
-    todo("mutate", "Mutate offspring", "GeneticAlgorithm.js");
+  mutate(chromosome) {
+    return this.mutationFunction(chromosome);
   }
 
   reportResults() {
-    console.log("Best solution found:", this.bestSolution);
+    console.log("Best solution found:", this.bestSolution.genes.join(""));
     console.log("Fitness:", this.bestSolution.fitness);
     console.log("Generations:", this.currentGeneration);
   }
