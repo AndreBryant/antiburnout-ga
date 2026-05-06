@@ -4,6 +4,7 @@ import { todo } from "./utils.js";
 export class GeneticAlgorithm {
   populationSize;
   geneCount;
+  crossoverRate;
   mutationRate;
   generations;
   currentGeneration = 0;
@@ -16,6 +17,7 @@ export class GeneticAlgorithm {
   constructor(
     populationSize,
     geneCount,
+    crossoverRate,
     mutationRate,
     generations,
     fitnessFunction,
@@ -25,6 +27,7 @@ export class GeneticAlgorithm {
   ) {
     this.populationSize = populationSize;
     this.geneCount = geneCount;
+    this.crossoverRate = crossoverRate;
     this.mutationRate = mutationRate;
     this.generations = generations;
     this.fitnessFunction = fitnessFunction;
@@ -36,17 +39,10 @@ export class GeneticAlgorithm {
   start() {
     this.initializePopulation();
 
-    /**
-     * Algorithm steps:
-     *  1. Evaluate fitness of each individual in the population
-     *  2. Select parents for the next generation
-     *  3. Crossover parents to create offspring
-     *  4. Mutate offspring
-     *  5. Replace the old population with the new one
-     *  6. Repeat for a specified number of generations or until a satisfactory solution is found
-     */
+    while (this.currentGeneration <= this.generations) {
+      // i think generation 0 is the initial population so it makes sense that we increment at the start of the loop
+      this.currentGeneration++;
 
-    while (this.currentGeneration < this.generations) {
       if (
         this.bestSolution &&
         this.fitnessFunction(this.bestSolution) >= this.fitnessThreshold
@@ -55,24 +51,23 @@ export class GeneticAlgorithm {
         break;
       }
 
-      this.evaluateFitness();
       this.selectParents();
       this.crossover();
       this.mutate();
-
-      this.currentGeneration++;
+      this.evaluateFitness();
     }
   }
 
   initializePopulation() {
-    // Create an initial population of random chromosomes
     this.population = [];
     for (let i = 0; i < this.populationSize; i++) {
       const genes = this.randomGenes();
       const fitness = this.fitnessFunction(genes);
-      const chromosome = new Chromosome(genes, fitness);
+      const chromosome = new Chromosome(genes, 1 - 1 / fitness);
       this.population.push(chromosome);
     }
+
+    console.log({ initialPopulation: this.population });
   }
 
   evaluateFitness() {
@@ -104,6 +99,7 @@ export class GeneticAlgorithm {
   reportResults() {
     console.log("Best solution found:", this.bestSolution);
     console.log("Fitness:", this.fitnessFunction(this.bestSolution));
+    console.log("Generations:", this.currentGeneration);
   }
 
   randomGenes() {
