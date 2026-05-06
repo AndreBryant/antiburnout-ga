@@ -16,7 +16,7 @@ const ITEMS = Array.from({ length: NUMBER_OF_ITEMS }, () => ({
 // GA parameters
 const POPULATION_SIZE = 5;
 const FITNESS_THRESHOLD = 0.999;
-const GENERATIONS = 1000;
+const GENERATIONS = 2;
 const MUTATION_RATE = 0.01;
 const CROSSOVER_RATE = 0.7;
 
@@ -55,4 +55,4 @@ const ga = new GA(
   FITNESS_THRESHOLD,
 );
 
-ga.initializePopulation();
+ga.start();

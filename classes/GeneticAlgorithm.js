@@ -13,6 +13,7 @@ export class GeneticAlgorithm {
   mutationFunction;
   fitnessThreshold;
   bestSolution;
+  TOURNAMENT_SIZE = 5;
 
   constructor(
     populationSize,
@@ -51,7 +52,7 @@ export class GeneticAlgorithm {
         break;
       }
 
-      this.selectParents();
+      const [p1, p2] = [this.selectParent(), this.selectParent()];
       this.crossover();
       this.mutate();
       this.evaluateFitness();
@@ -76,12 +77,23 @@ export class GeneticAlgorithm {
     }
   }
 
-  selectParents() {
-    todo(
-      "selectParents",
-      "Select parents for the next generation",
-      "GeneticAlgorithm.js",
-    );
+  // Tournament selection
+  selectParent() {
+    const tournament = [];
+
+    while (tournament.length < this.TOURNAMENT_SIZE) {
+      const i = Math.floor(Math.random() * this.populationSize);
+      if (
+        tournament.indexOf(i) === -1 &&
+        Math.random() < 1 / this.populationSize
+      ) {
+        tournament.push(i);
+      }
+    }
+
+    return Array.from(new Set(tournament))
+      .map((index) => this.population[index])
+      .sort((a, b) => b.fitness - a.fitness)[0];
   }
 
   crossover() {
