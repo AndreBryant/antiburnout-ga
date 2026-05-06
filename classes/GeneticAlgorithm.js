@@ -1,9 +1,12 @@
+import { Chromosome } from "./Chromosome.js";
 import { todo } from "./utils.js";
 
 export class GeneticAlgorithm {
   populationSize;
+  geneCount;
   mutationRate;
   generations;
+  currentGeneration = 0;
   fitnessFunction;
   crossoverFunction;
   mutationFunction;
@@ -12,6 +15,7 @@ export class GeneticAlgorithm {
 
   constructor(
     populationSize,
+    geneCount,
     mutationRate,
     generations,
     fitnessFunction,
@@ -20,6 +24,7 @@ export class GeneticAlgorithm {
     fitnessThreshold,
   ) {
     this.populationSize = populationSize;
+    this.geneCount = geneCount;
     this.mutationRate = mutationRate;
     this.generations = generations;
     this.fitnessFunction = fitnessFunction;
@@ -41,15 +46,12 @@ export class GeneticAlgorithm {
      *  6. Repeat for a specified number of generations or until a satisfactory solution is found
      */
 
-    for (let generation = 0; generation < this.generations; generation++) {
+    while (this.currentGeneration < this.generations) {
       if (
         this.bestSolution &&
         this.fitnessFunction(this.bestSolution) >= this.fitnessThreshold
       ) {
-        console.log(
-          `Solution found in generation ${generation}:`,
-          this.bestSolution,
-        );
+        this.reportResults();
         break;
       }
 
@@ -57,23 +59,26 @@ export class GeneticAlgorithm {
       this.selectParents();
       this.crossover();
       this.mutate();
+
+      this.currentGeneration++;
     }
   }
 
   initializePopulation() {
-    todo(
-      "initializePopulation",
-      "Initialize the population with random individuals",
-      "GeneticAlgorithm.js",
-    );
+    // Create an initial population of random chromosomes
+    this.population = [];
+    for (let i = 0; i < this.populationSize; i++) {
+      const genes = this.randomGenes();
+      const fitness = this.fitnessFunction(genes);
+      const chromosome = new Chromosome(genes, fitness);
+      this.population.push(chromosome);
+    }
   }
 
   evaluateFitness() {
-    todo(
-      "evaluateFitness",
-      "Evaluate the fitness of each individual in the population",
-      "GeneticAlgorithm.js",
-    );
+    for (const chromosome of this.population) {
+      chromosome.fitness = this.fitnessFunction(chromosome.genes);
+    }
   }
 
   selectParents() {
@@ -94,5 +99,16 @@ export class GeneticAlgorithm {
 
   mutate() {
     todo("mutate", "Mutate offspring", "GeneticAlgorithm.js");
+  }
+
+  reportResults() {
+    console.log("Best solution found:", this.bestSolution);
+    console.log("Fitness:", this.fitnessFunction(this.bestSolution));
+  }
+
+  randomGenes() {
+    return Array.from({ length: this.geneCount }, () =>
+      Math.floor(Math.random() * 2),
+    );
   }
 }
