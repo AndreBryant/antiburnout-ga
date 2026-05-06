@@ -45,7 +45,7 @@ export class GeneticAlgorithm {
 
       if (
         this.bestSolution &&
-        this.fitnessFunction(this.bestSolution) >= this.fitnessThreshold
+        this.bestSolution.fitness >= this.fitnessThreshold
       ) {
         this.reportResults();
         break;
@@ -65,14 +65,14 @@ export class GeneticAlgorithm {
       const fitness = this.fitnessFunction(genes);
       const chromosome = new Chromosome(genes, 1 - 1 / fitness);
       this.population.push(chromosome);
+      this.isBestSolution(chromosome);
     }
-
-    console.log({ initialPopulation: this.population });
   }
 
   evaluateFitness() {
     for (const chromosome of this.population) {
       chromosome.fitness = this.fitnessFunction(chromosome.genes);
+      this.isBestSolution(chromosome);
     }
   }
 
@@ -98,7 +98,7 @@ export class GeneticAlgorithm {
 
   reportResults() {
     console.log("Best solution found:", this.bestSolution);
-    console.log("Fitness:", this.fitnessFunction(this.bestSolution));
+    console.log("Fitness:", this.bestSolution.fitness);
     console.log("Generations:", this.currentGeneration);
   }
 
@@ -106,5 +106,12 @@ export class GeneticAlgorithm {
     return Array.from({ length: this.geneCount }, () =>
       Math.floor(Math.random() * 2),
     );
+  }
+
+  isBestSolution(chromosome) {
+    // just automatically updates the best solution
+    if (!this.bestSolution || chromosome.fitness > this.bestSolution.fitness) {
+      this.bestSolution = chromosome;
+    }
   }
 }
